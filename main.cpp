@@ -4,11 +4,47 @@
 #include <iostream>
 #include <stdexcept>
 #include <cstdlib>
+#include <cstring>
 #include <vector>
-#include <string>
 
 const uint32_t WIDTH = 800;
 const uint32_t HEIGHT = 600;
+
+const std::vector<const char*> validationLayers = {
+    "VK_LAYER_KHRONOS_validation"
+};
+
+#ifdef NDEBUG
+    const bool enableValidationLayers = false;
+#else   
+    const bool enableValidationLayers = true;
+#endif
+
+bool checkValidationLayerSupport() {
+    std::cout << std::endl;
+    uint32_t layerCount;
+    vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
+    std::vector<VkLayerProperties> availableLayers(layerCount);
+    vkEnumerateInstanceLayerProperties(&layerCount, availableLayers.data());
+
+    for (const char* requestedLayer : validationLayers) {
+        bool layerFound = false;
+        std::cout << "Searching for: " << requestedLayer << std::endl;
+        for (const auto& availableLayer : availableLayers) {
+            if (strcmp(requestedLayer, availableLayer.layerName) == 0) {
+                std::cout << "Layer found!" << std::endl;
+                layerFound = true;
+                break;
+            }
+        }
+        if (!layerFound) {
+            std::cerr << "Layer: " << requestedLayer << " not found!" << std::endl;
+            return false;
+        }
+    }
+    std::cout << std::endl;
+    return true;
+}
 
 class HelloTriangleApp {
     public:
@@ -44,6 +80,10 @@ class HelloTriangleApp {
             // instance represents the connection between application and Vulkan library
             // telling driver about application's requirements and capabilities
 
+            if (enableValidationLayers && !checkValidationLayerSupport()) {
+                throw std::runtime_error("validation layers requested, but not available!");
+            }
+
             // create instance. technically optionaly, but driver may able to use data to optimize?
             VkApplicationInfo appInfo{}; // value-initialization: built-in types set to default value, user-defined have default constructor called
             appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
@@ -68,6 +108,14 @@ class HelloTriangleApp {
             createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
             createInfo.pApplicationInfo = &appInfo;
 
+            if (enableValidationLayers) {
+                createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
+                createInfo.ppEnabledLayerNames = validationLayers.data();
+            } else {
+                createInfo.enabledLayerCount = 0;
+                createInfo.ppEnabledLayerNames = nullptr;
+            }
+
             // find extensions glfw needs to interface with the window system
             uint32_t glfwExtensionCount = 0;
             const char** glfwExtensions;
@@ -77,15 +125,13 @@ class HelloTriangleApp {
             createInfo.enabledExtensionCount = glfwExtensionCount;
             createInfo.ppEnabledExtensionNames = glfwExtensions;
 
-            createInfo.enabledLayerCount = 0; // next 2 parameters (including this) state the validation layers?
-
             // check if glfw extensions are supported (not necessary since instance creation will fail anyways)
             for (int i = 0; i < glfwExtensionCount; ++i) {
                 std::cout << "Searching for " << glfwExtensions[i] << std::endl;
                 bool foundExtension = false;
                 for (const auto& extension : supportedExtensions) {
-                    if (std::string(extension.extensionName) == std::string(glfwExtensions[i])) {
-                        std::cout << "found extension!" << std::endl << std::endl;
+                    if (strcmp(extension.extensionName, glfwExtensions[i]) == 0) {
+                        std::cout << "Extension found!" << std::endl << std::endl;
                         foundExtension = true;
                         break;
                     }
@@ -130,3 +176,8 @@ int main() {
 
     return EXIT_SUCCESS;
 }
+
+// validation layers prev. were instance and device specific. Previously, device specific applied to GPU-specific calls. 
+// now, instance layers apply to all calls. still recommend to enable validation layers at device level for compatability
+
+// validation layers intercept Vulkan API calls and perform various checks and validations
