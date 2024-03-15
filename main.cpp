@@ -92,7 +92,9 @@ class HelloTriangleApp {
         // fields:
         GLFWwindow* window;
         VkInstance instance; // initial connection between application and driver (vulkan library initialization)
-        VkPhysicalDevice physicalDevice = VK_NULL_HANDLE; // graphics device selected. implictly destroyed in VkInstance destruction
+        VkPhysicalDevice physicalDevice = VK_NULL_HANDLE; // graphics device selected. handle implictly destroyed in VkInstance destruction
+        VkDevice device; // logical device to interface the physicalDevice
+        VkQueue graphicsQueue; // created automatically with logical device creation
 
         ///////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -109,6 +111,7 @@ class HelloTriangleApp {
         void initVulkan() {
             createInstance();
             pickPhysicalDevice();
+            createLogicalDevice();
         }
 
         void createInstance() {
@@ -194,6 +197,7 @@ class HelloTriangleApp {
             return false;
         }
 
+        // pick if discrete GPU and supported needed queues
         void pickPhysicalDevice() {
             uint32_t deviceCount = 0;
             vkEnumeratePhysicalDevices(instance, &deviceCount, nullptr);
@@ -218,6 +222,43 @@ class HelloTriangleApp {
             }
         }
 
+        // queues to be created, physicalDevice features, device-specific extensions
+        void createLogicalDevice() {
+            // specify the queues to be created
+            QueueFamilyIndices indices = findQueueFamilies(physicalDevice);
+
+            VkDeviceQueueCreateInfo queueCreateInfo{}; // value-initialization
+            queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+            queueCreateInfo.queueFamilyIndex = indices.graphicsFamily.value();
+            queueCreateInfo.queueCount = 1;
+            float queuePriority = 1.0f;
+            queueCreateInfo.pQueuePriorities = &queuePriority;
+
+            VkPhysicalDeviceFeatures deviceFeatures{}; // need to specify used physical device features
+
+            VkDeviceCreateInfo createInfo{};
+            createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
+            createInfo.pQueueCreateInfos = &queueCreateInfo;
+            createInfo.queueCreateInfoCount = 1;
+            createInfo.pEnabledFeatures = &deviceFeatures;
+            createInfo.enabledExtensionCount = 0; // device specific extensions, e.g VK_KHR_SWAPCHAIN, VK_NV_ray_tracing
+            createInfo.ppEnabledExtensionNames = nullptr;
+            if (enableValidationLayers) {
+                createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
+                createInfo.ppEnabledLayerNames = validationLayers.data();
+            } else {
+                createInfo.enabledLayerCount = 0;
+                createInfo.ppEnabledLayerNames = nullptr;
+            }
+
+            if (vkCreateDevice(physicalDevice, &createInfo, nullptr, &device) != VK_SUCCESS) {
+                throw std::runtime_error("failed to create logical device!");
+            }
+
+            // retrieve queue handle
+            vkGetDeviceQueue(device, indices.graphicsFamily.value(), 0, &graphicsQueue); // at queue index 0 since only 1 queue created
+        }
+
         void mainLoop() {
             while (!glfwWindowShouldClose(window)) {
                 glfwPollEvents();
@@ -228,6 +269,8 @@ class HelloTriangleApp {
         }
 
         void cleanup() {
+            vkDestroyDevice(device, nullptr); // logical devices don't interact directly with instances (which is why instance isn't a parameter)
+
             vkDestroyInstance(instance, nullptr);
 
             glfwDestroyWindow(window);
@@ -253,3 +296,5 @@ int main() {
 // now, instance layers apply to all calls. still recommend to enable validation layers at device level for compatability
 
 // validation layers intercept Vulkan API calls and perform various checks and validations
+
+// you can create all of the command buffers on multiple threads and then submit them all at once on the main thread with a single low-overhead call.
