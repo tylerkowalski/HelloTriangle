@@ -116,6 +116,7 @@ void HtDevice::pickPhysicalDevice() {
   vkEnumeratePhysicalDevices(instance, &deviceCount, devices.data());
 
   for (const auto &device : devices) {
+
     if (isDeviceSuitable(device)) {
       physicalDevice = device;
       break;
@@ -200,6 +201,7 @@ void HtDevice::createSurface() {
   window.createWindowSurface(instance, &surface_);
 }
 
+// currently we require that a suitable GPU be discrete
 bool HtDevice::isDeviceSuitable(VkPhysicalDevice device) {
   QueueFamilyIndices indices = findQueueFamilies(device);
 
@@ -215,8 +217,12 @@ bool HtDevice::isDeviceSuitable(VkPhysicalDevice device) {
   VkPhysicalDeviceFeatures supportedFeatures;
   vkGetPhysicalDeviceFeatures(device, &supportedFeatures);
 
+  VkPhysicalDeviceProperties deviceProperties;
+  vkGetPhysicalDeviceProperties(device, &deviceProperties);
+
   return indices.isComplete() && extensionsSupported && swapChainAdequate &&
-         supportedFeatures.samplerAnisotropy;
+         supportedFeatures.samplerAnisotropy &&
+         deviceProperties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU;
 }
 
 void HtDevice::populateDebugMessengerCreateInfo(
