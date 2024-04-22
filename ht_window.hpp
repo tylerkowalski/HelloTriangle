@@ -17,6 +17,8 @@ public:
 
   bool shouldClose();
 
+  void createWindowSurface(VkInstance instance, VkSurfaceKHR *surface);
+
 private:
   const int width;
   const int height;

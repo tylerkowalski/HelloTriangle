@@ -1,5 +1,7 @@
 #include "ht_window.hpp"
 
+#include <stdexcept>
+
 namespace ht {
 HtWindow::HtWindow(int w, int h, std::string name)
     : width{w}, height{h}, windowName{name} {
@@ -21,6 +23,13 @@ void HtWindow::initWindow() {
 
   window =
       glfwCreateWindow(width, height, windowName.c_str(), nullptr, nullptr);
+}
+
+void HtWindow::createWindowSurface(VkInstance instance, VkSurfaceKHR *surface) {
+  if (glfwCreateWindowSurface(instance, window, nullptr, surface) !=
+      VK_SUCCESS) {
+    throw std::runtime_error("failed to create window surface!");
+  }
 }
 
 } // namespace ht

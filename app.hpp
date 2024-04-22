@@ -1,5 +1,6 @@
 #pragma once
 
+#include "ht_device.hpp"
 #include "ht_pipeline.hpp"
 #include "ht_window.hpp"
 
@@ -13,7 +14,9 @@ public:
 
 private:
   HtWindow htWindow{WIDTH, HEIGHT, "Hello Vulkan!"};
-  HtPipeline htPipeline{"shaders/simple_shader.vert.spv",
-                        "shaders/simple_shader.frag.spv"};
+  HtDevice htDevice{htWindow};
+  HtPipeline htPipeline{htDevice, "shaders/simple_shader.vert.spv",
+                        "shaders/simple_shader.frag.spv",
+                        HtPipeline::defaultPipelineConfigInfo(WIDTH, HEIGHT)};
 };
 } // namespace ht
