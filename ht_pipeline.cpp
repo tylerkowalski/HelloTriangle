@@ -125,6 +125,13 @@ void HtPipeline::createShaderModule(const std::vector<char> &code,
   }
 }
 
+void HtPipeline::bind(VkCommandBuffer commandBuffer) {
+  // no checks needed to see valid graphics pipeline since we check for that at
+  // initialization
+  vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
+                    graphicsPipeline);
+}
+
 PipelineConfigInfo HtPipeline::defaultPipelineConfigInfo(uint32_t width,
                                                          uint32_t height) {
   PipelineConfigInfo configInfo{};
