@@ -5,28 +5,26 @@
 
 #include <string>
 
-namespace ht
-{
+namespace ht {
 
-class HtWindow
-{
-  public:
-    HtWindow(int w, int h, std::string name);
-    ~HtWindow();
+class HtWindow {
+public:
+  HtWindow(int w, int h, std::string name);
+  ~HtWindow();
 
-    HtWindow(const HtWindow &) = delete;
-    HtWindow &operator=(const HtWindow &) = delete;
+  HtWindow(const HtWindow &) = delete;
+  HtWindow &operator=(const HtWindow &) = delete;
 
-    bool shouldClose();
+  bool shouldClose();
 
-  private:
-    const int width;
-    const int height;
+private:
+  const int width;
+  const int height;
 
-    std::string windowName;
+  std::string windowName;
 
-    GLFWwindow *window;
+  GLFWwindow *window;
 
-    void initWindow();
+  void initWindow();
 };
 } // namespace ht
