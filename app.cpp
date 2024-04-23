@@ -6,8 +6,8 @@
 namespace ht {
 
 App::App() {
-  loadModels();
-  // loadSierpinskiModel();
+  // loadModels();
+  loadSierpinskiModel();
   createPipelineLayout();
   createPipeline();
   createCommandBuffers();
@@ -88,10 +88,10 @@ void App::createCommandBuffers() {
                          VK_SUBPASS_CONTENTS_INLINE);
 
     htPipeline->bind(commandBuffers[i]);
-    htModel->bind(commandBuffers[i]);
-    htModel->draw(commandBuffers[i]);
-    // sierpinskiModel->bind(commandBuffers[i]);
-    // sierpinskiModel->draw(commandBuffers[i]);
+    // htModel->bind(commandBuffers[i]);
+    // htModel->draw(commandBuffers[i]);
+    sierpinskiModel->bind(commandBuffers[i]);
+    sierpinskiModel->draw(commandBuffers[i]);
 
     vkCmdEndRenderPass(commandBuffers[i]);
     if (vkEndCommandBuffer(commandBuffers[i]) != VK_SUCCESS) {
@@ -116,13 +116,13 @@ void App::drawFrame() {
 
 void App::loadModels() {
   std::vector<HtModel::Vertex> vertices{
-      {{0.0f, -0.5f}}, {{0.5f, 0.5f}}, {{-0.5f, 0.5f}}};
+      {{-1.0f, 1.0f}}, {{0.0f, -1.0f}}, {{1.0f, 1.0f}}};
   htModel = std::make_unique<HtModel>(htDevice, vertices);
 }
 
 void recursiveGen(std::vector<HtModel::Vertex> &vertices,
                   std::vector<glm::vec2> curTriangle, int level) {
-  if (level < 4) {
+  if (level < 2) {
     glm::vec2 a = curTriangle[0];
     glm::vec2 b = curTriangle[1];
     glm::vec2 c = curTriangle[2];
@@ -153,11 +153,12 @@ void recursiveGen(std::vector<HtModel::Vertex> &vertices,
 }
 
 void App::loadSierpinskiModel() {
-  std::vector<HtModel::Vertex> modelVertices{
-      {{-0.5f, 0.5f}}, {{0.5f, 0.5f}}, {{0.0f, -0.5f}}};
-  std::vector<glm::vec2> vertices{{-0.5f, 0.5f}, {0.5f, 0.5f}, {0.0f, -0.5f}};
+  // std::vector<HtModel::Vertex> modelVertices{
+  //     {{-1.0f, 1.0f}}, {{0.0f, -1.0f}}, {{1.0f, 1.0f}}};
+  std::vector<HtModel::Vertex> modelVertices{};
+  std::vector<glm::vec2> vertices{{-1.0f, 1.0f}, {0.0f, -1.0f}, {1.0f, 1.0f}};
 
-  recursiveGen(modelVertices, vertices, 0);
+  recursiveGen(modelVertices, vertices, 1);
   sierpinskiModel = std::make_unique<HtModel>(htDevice, modelVertices);
 }
 
