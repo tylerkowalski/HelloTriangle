@@ -6,6 +6,8 @@
 namespace ht {
 
 App::App() {
+  loadModels();
+  // loadSierpinskiModel();
   createPipelineLayout();
   createPipeline();
   createCommandBuffers();
@@ -86,7 +88,10 @@ void App::createCommandBuffers() {
                          VK_SUBPASS_CONTENTS_INLINE);
 
     htPipeline->bind(commandBuffers[i]);
-    vkCmdDraw(commandBuffers[i], 3, 1, 0, 0);
+    htModel->bind(commandBuffers[i]);
+    htModel->draw(commandBuffers[i]);
+    // sierpinskiModel->bind(commandBuffers[i]);
+    // sierpinskiModel->draw(commandBuffers[i]);
 
     vkCmdEndRenderPass(commandBuffers[i]);
     if (vkEndCommandBuffer(commandBuffers[i]) != VK_SUCCESS) {
@@ -107,6 +112,53 @@ void App::drawFrame() {
   if (result != VK_SUCCESS) {
     throw std::runtime_error("failed to present swapchain image!");
   }
+}
+
+void App::loadModels() {
+  std::vector<HtModel::Vertex> vertices{
+      {{0.0f, -0.5f}}, {{0.5f, 0.5f}}, {{-0.5f, 0.5f}}};
+  htModel = std::make_unique<HtModel>(htDevice, vertices);
+}
+
+void recursiveGen(std::vector<HtModel::Vertex> &vertices,
+                  std::vector<glm::vec2> curTriangle, int level) {
+  if (level < 4) {
+    glm::vec2 a = curTriangle[0];
+    glm::vec2 b = curTriangle[1];
+    glm::vec2 c = curTriangle[2];
+
+    glm::vec2 x = 0.5f * (a + b);
+    glm::vec2 y = 0.5f * (b + c);
+    glm::vec2 z = 0.5f * (a + c);
+
+    vertices.emplace_back(HtModel::Vertex{a});
+    vertices.emplace_back(HtModel::Vertex{x});
+    vertices.emplace_back(HtModel::Vertex{z});
+    std::vector<glm::vec2> Triangle1{a, x, z};
+
+    vertices.emplace_back(HtModel::Vertex{x});
+    vertices.emplace_back(HtModel::Vertex{b});
+    vertices.emplace_back(HtModel::Vertex{y});
+    std::vector<glm::vec2> Triangle2{x, b, y};
+
+    vertices.emplace_back(HtModel::Vertex{z});
+    vertices.emplace_back(HtModel::Vertex{y});
+    vertices.emplace_back(HtModel::Vertex{c});
+    std::vector<glm::vec2> Triangle3{z, y, c};
+
+    recursiveGen(vertices, Triangle1, level + 1);
+    recursiveGen(vertices, Triangle2, level + 1);
+    recursiveGen(vertices, Triangle3, level + 1);
+  }
+}
+
+void App::loadSierpinskiModel() {
+  std::vector<HtModel::Vertex> modelVertices{
+      {{-0.5f, 0.5f}}, {{0.5f, 0.5f}}, {{0.0f, -0.5f}}};
+  std::vector<glm::vec2> vertices{{-0.5f, 0.5f}, {0.5f, 0.5f}, {0.0f, -0.5f}};
+
+  recursiveGen(modelVertices, vertices, 0);
+  sierpinskiModel = std::make_unique<HtModel>(htDevice, modelVertices);
 }
 
 } // namespace ht

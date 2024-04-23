@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ht_device.hpp"
+#include "ht_model.hpp"
 #include "ht_pipeline.hpp"
 #include "ht_swap_chain.hpp"
 #include "ht_window.hpp"
@@ -29,9 +30,14 @@ private:
   VkPipelineLayout pipelineLayout;
   std::vector<VkCommandBuffer> commandBuffers;
 
+  std::unique_ptr<HtModel> htModel;
+  std::unique_ptr<HtModel> sierpinskiModel;
+
   void createPipelineLayout();
   void createPipeline();
   void createCommandBuffers();
   void drawFrame();
+  void loadModels();
+  void loadSierpinskiModel();
 };
 } // namespace ht

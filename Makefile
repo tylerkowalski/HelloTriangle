@@ -1,10 +1,10 @@
-CFLAGS = -std=c++17 -O2
+CFLAGS = -std=c++17 -g
 
 LDFLAGS = -lglfw -lvulkan -ldl -lpthread -lX11 -lXxf86vm -lXrandr -lXi
 
 # create list of all spv files and set as dependency
 vertSources = $(shell find ./shaders -type f -name "*.vert")
-vertObjFiles = $(patsubst %.vert, %.vert.spv, $(vertSources))
+vertObjFiles = $(patsubst %.vert, %.vert.spv, $(vertSources)) 
 fragSources = $(shell find ./shaders -type f -name "*.frag")
 fragObjFiles = $(patsubst %.frag, %.frag.spv, $(fragSources))
 
@@ -13,7 +13,7 @@ app : *.cpp *.hpp $(vertObjFiles) $(fragObjFiles)
 
 #make shader targets
 %.spv: %
-	${GLSLC} $< -o $@
+	glslc $< -o $@
 
 .PHONY: test clean
 
