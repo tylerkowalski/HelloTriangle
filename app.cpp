@@ -6,8 +6,8 @@
 namespace ht {
 
 App::App() {
-  // loadModels();
-  loadSierpinskiModel();
+  loadModels();
+  // loadSierpinskiModel();
   createPipelineLayout();
   createPipeline();
   createCommandBuffers();
@@ -88,10 +88,10 @@ void App::createCommandBuffers() {
                          VK_SUBPASS_CONTENTS_INLINE);
 
     htPipeline->bind(commandBuffers[i]);
-    // htModel->bind(commandBuffers[i]);
-    // htModel->draw(commandBuffers[i]);
-    sierpinskiModel->bind(commandBuffers[i]);
-    sierpinskiModel->draw(commandBuffers[i]);
+    htModel->bind(commandBuffers[i]);
+    htModel->draw(commandBuffers[i]);
+    // sierpinskiModel->bind(commandBuffers[i]);
+    // sierpinskiModel->draw(commandBuffers[i]);
 
     vkCmdEndRenderPass(commandBuffers[i]);
     if (vkEndCommandBuffer(commandBuffers[i]) != VK_SUCCESS) {
@@ -115,8 +115,9 @@ void App::drawFrame() {
 }
 
 void App::loadModels() {
-  std::vector<HtModel::Vertex> vertices{
-      {{-1.0f, 1.0f}}, {{0.0f, -1.0f}}, {{1.0f, 1.0f}}};
+  std::vector<HtModel::Vertex> vertices{{{-1.0f, 1.0f}, {1.0f, 0.0f, 0.0f}},
+                                        {{0.0f, -1.0f}, {0.0f, 1.0f, 0.0f}},
+                                        {{1.0f, 1.0f}, {0.0f, 0.0f, 1.0f}}};
   htModel = std::make_unique<HtModel>(htDevice, vertices);
 }
 
