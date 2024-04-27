@@ -28,7 +28,7 @@ public:
   ~HtPipeline();
 
   HtPipeline(const HtPipeline &) = delete;
-  void operator=(const HtPipeline &) = delete;
+  HtPipeline &operator=(const HtPipeline &) = delete;
 
   void bind(VkCommandBuffer commandBuffer);
 

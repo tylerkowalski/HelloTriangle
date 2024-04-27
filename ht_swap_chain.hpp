@@ -19,7 +19,7 @@ public:
   ~HtSwapChain();
 
   HtSwapChain(const HtSwapChain &) = delete;
-  void operator=(const HtSwapChain &) = delete;
+  HtSwapChain &operator=(const HtSwapChain &) = delete;
 
   VkFramebuffer getFrameBuffer(int index) {
     return swapChainFramebuffers[index];

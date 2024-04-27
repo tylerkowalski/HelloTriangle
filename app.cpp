@@ -6,8 +6,8 @@
 namespace ht {
 
 App::App() {
-  loadModels();
-  // loadSierpinskiModel();
+  // loadModels();
+  loadSierpinskiModel();
   createPipelineLayout();
   createPipeline();
   createCommandBuffers();
@@ -88,10 +88,10 @@ void App::createCommandBuffers() {
                          VK_SUBPASS_CONTENTS_INLINE);
 
     htPipeline->bind(commandBuffers[i]);
-    htModel->bind(commandBuffers[i]);
-    htModel->draw(commandBuffers[i]);
-    // sierpinskiModel->bind(commandBuffers[i]);
-    // sierpinskiModel->draw(commandBuffers[i]);
+    // htModel->bind(commandBuffers[i]);
+    // htModel->draw(commandBuffers[i]);
+    sierpinskiModel->bind(commandBuffers[i]);
+    sierpinskiModel->draw(commandBuffers[i]);
 
     vkCmdEndRenderPass(commandBuffers[i]);
     if (vkEndCommandBuffer(commandBuffers[i]) != VK_SUCCESS) {
@@ -132,19 +132,19 @@ void recursiveGen(std::vector<HtModel::Vertex> &vertices,
     glm::vec2 y = 0.5f * (b + c);
     glm::vec2 z = 0.5f * (a + c);
 
-    vertices.emplace_back(HtModel::Vertex{a});
-    vertices.emplace_back(HtModel::Vertex{x});
-    vertices.emplace_back(HtModel::Vertex{z});
+    vertices.emplace_back(HtModel::Vertex{a, {1.0f, 0.0f, 0.0f}});
+    vertices.emplace_back(HtModel::Vertex{x, {0.0f, 1.0f, 0.0f}});
+    vertices.emplace_back(HtModel::Vertex{z, {0.0f, 0.0f, 1.0f}});
     std::vector<glm::vec2> Triangle1{a, x, z};
 
-    vertices.emplace_back(HtModel::Vertex{x});
-    vertices.emplace_back(HtModel::Vertex{b});
-    vertices.emplace_back(HtModel::Vertex{y});
+    vertices.emplace_back(HtModel::Vertex{x, {1.0f, 0.0f, 0.0f}});
+    vertices.emplace_back(HtModel::Vertex{b, {0.0f, 1.0f, 0.0f}});
+    vertices.emplace_back(HtModel::Vertex{y, {0.0f, 0.0f, 1.0f}});
     std::vector<glm::vec2> Triangle2{x, b, y};
 
-    vertices.emplace_back(HtModel::Vertex{z});
-    vertices.emplace_back(HtModel::Vertex{y});
-    vertices.emplace_back(HtModel::Vertex{c});
+    vertices.emplace_back(HtModel::Vertex{z, {1.0f, 0.0f, 0.0f}});
+    vertices.emplace_back(HtModel::Vertex{y, {0.0f, 1.0f, 0.0f}});
+    vertices.emplace_back(HtModel::Vertex{c, {0.0f, 0.0f, 1.0f}});
     std::vector<glm::vec2> Triangle3{z, y, c};
 
     recursiveGen(vertices, Triangle1, level + 1);
