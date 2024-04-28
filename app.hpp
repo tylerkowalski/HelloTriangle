@@ -36,6 +36,7 @@ private:
   void createPipelineLayout();
   void createPipeline();
   void createCommandBuffers();
+  void freeCommandBuffers();
   void drawFrame();
   void loadModels();
   void loadSierpinskiModel();

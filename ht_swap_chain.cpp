@@ -13,6 +13,18 @@ namespace ht {
 
 HtSwapChain::HtSwapChain(HtDevice &deviceRef, VkExtent2D extent)
     : device{deviceRef}, windowExtent{extent} {
+  init();
+}
+
+HtSwapChain::HtSwapChain(HtDevice &deviceRef, VkExtent2D extent,
+                         std::shared_ptr<HtSwapChain> previous)
+    : device{deviceRef}, windowExtent{extent}, oldSwapChain{previous} {
+  init();
+
+  oldSwapChain = nullptr; // signal that the old swapchain destructor should be
+                          // called if not owned by anyone else
+}
+void HtSwapChain::init() {
   createSwapChain();
   createImageViews();
   createRenderPass();
@@ -161,7 +173,8 @@ void HtSwapChain::createSwapChain() {
   createInfo.presentMode = presentMode;
   createInfo.clipped = VK_TRUE;
 
-  createInfo.oldSwapchain = VK_NULL_HANDLE;
+  createInfo.oldSwapchain =
+      oldSwapChain == nullptr ? VK_NULL_HANDLE : oldSwapChain->swapChain;
 
   if (vkCreateSwapchainKHR(device.device(), &createInfo, nullptr, &swapChain) !=
       VK_SUCCESS) {

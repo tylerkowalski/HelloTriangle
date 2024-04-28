@@ -1,6 +1,7 @@
 #include "app.hpp"
 
 #include <array>
+#include <cassert>
 #include <stdexcept>
 
 namespace ht {
@@ -38,7 +39,12 @@ void App::createPipelineLayout() {
 }
 
 void App::createPipeline() {
+  assert(htSwapChain != nullptr && "Cannot create pipline before swap chain!");
+  assert(pipelineLayout != nullptr &&
+         "Cannot create pipline before pipeline layout!");
+
   PipelineConfigInfo pipelineConfig{};
+
   HtPipeline::defaultPipelineConfigInfo(pipelineConfig);
 
   pipelineConfig.renderPass = htSwapChain->getRenderPass();
@@ -55,8 +61,20 @@ void App::recreateSwapChain() {
     glfwWaitEvents();
   }
   vkDeviceWaitIdle(htDevice.device());
-  htSwapChain = nullptr;
-  htSwapChain = std::make_unique<HtSwapChain>(htDevice, extent);
+
+  if (htSwapChain == nullptr) {
+    htSwapChain = std::make_unique<HtSwapChain>(htDevice, extent);
+  } else {
+    htSwapChain =
+        std::make_unique<HtSwapChain>(htDevice, extent, std::move(htSwapChain));
+    if (htSwapChain->imageCount() != commandBuffers.size()) {
+      freeCommandBuffers();
+      createCommandBuffers();
+    }
+  }
+
+  // note that if the previous renderpass is compatible, we do not need to
+  // create a new pipeline
   createPipeline();
 }
 
@@ -74,6 +92,13 @@ void App::createCommandBuffers() {
                                commandBuffers.data()) != VK_SUCCESS) {
     throw std::runtime_error("failed to allocate command buffers!");
   }
+}
+
+void App::freeCommandBuffers() {
+  vkFreeCommandBuffers(htDevice.device(), htDevice.getCommandPool(),
+                       static_cast<uint32_t>(commandBuffers.size()),
+                       commandBuffers.data());
+  commandBuffers.clear();
 }
 
 void App::recordCommandBuffer(int imageIndex) {
