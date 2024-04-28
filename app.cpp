@@ -38,8 +38,9 @@ void App::createPipelineLayout() {
 }
 
 void App::createPipeline() {
-  auto pipelineConfig = HtPipeline::defaultPipelineConfigInfo(
-      htSwapChain->width(), htSwapChain->height());
+  PipelineConfigInfo pipelineConfig{};
+  HtPipeline::defaultPipelineConfigInfo(pipelineConfig);
+
   pipelineConfig.renderPass = htSwapChain->getRenderPass();
   pipelineConfig.pipelineLayout = pipelineLayout;
   htPipeline = std::make_unique<HtPipeline>(
@@ -100,6 +101,18 @@ void App::recordCommandBuffer(int imageIndex) {
 
   vkCmdBeginRenderPass(commandBuffers[imageIndex], &renderPassInfo,
                        VK_SUBPASS_CONTENTS_INLINE);
+
+  VkViewport viewport{};
+  viewport.x = 0.0f;
+  viewport.y = 0.0f;
+  viewport.width = static_cast<float>(htSwapChain->getSwapChainExtent().width);
+  viewport.height =
+      static_cast<float>(htSwapChain->getSwapChainExtent().height);
+  viewport.minDepth = 0.0f;
+  viewport.maxDepth = 0.0f;
+  VkRect2D scissor{{0, 0}, htSwapChain->getSwapChainExtent()};
+  vkCmdSetViewport(commandBuffers[imageIndex], 0, 1, &viewport);
+  vkCmdSetScissor(commandBuffers[imageIndex], 0, 1, &scissor);
 
   htPipeline->bind(commandBuffers[imageIndex]);
   // htModel->bind(commandBuffers[i]);
