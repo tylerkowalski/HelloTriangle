@@ -25,7 +25,7 @@ public:
 private:
   HtWindow htWindow{WIDTH, HEIGHT, "Hello Vulkan!"};
   HtDevice htDevice{htWindow};
-  HtSwapChain htSwapChain{htDevice, htWindow.getExtent()};
+  std::unique_ptr<HtSwapChain> htSwapChain;
   std::unique_ptr<HtPipeline> htPipeline;
   VkPipelineLayout pipelineLayout;
   std::vector<VkCommandBuffer> commandBuffers;
@@ -39,5 +39,7 @@ private:
   void drawFrame();
   void loadModels();
   void loadSierpinskiModel();
+  void recreateSwapChain();
+  void recordCommandBuffer(int imageIndex);
 };
 } // namespace ht
